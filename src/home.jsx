@@ -1,17 +1,43 @@
+import { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "./firebaseConfig";
 import { Link } from "react-router-dom";
-import "./home.css";
+
+
 const Home = () => {
+  const [bills, setBills] = useState([]);
+
+  useEffect(() => {
+    const fetchBills = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "bills"));
+        const billsList = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setBills(billsList);
+      } catch (error) {
+        console.error("Error fetching bills: ", error);
+      }
+    };
+
+    fetchBills();
+  }, []);
+
   return (
-    <div>
-      <h1>vote kenya</h1>
-      <div className="button-grid">
-        <Link to="/president"><button>vote for president</button></Link>
-        <Link to="/governor"><button>vote for governor</button></Link>
-        <Link to="/senator"><button>vote for senator</button></Link>
-        <Link to="/mp"><button>vote for mp</button></Link>
-        <Link to="/mca"><button>vote for mca</button></Link>
+    <>
+      <h1 style={{color: "green"}}>Upcoming Agricultural Bills</h1>
+      <div style={{ marginBottom: "100%", height: "130px"}}>
+        <ul style={{listStyle: "none"}}>
+          {bills.map(bill => (
+            <li key={bill.id}>
+              <h2>{bill.title}</h2>
+              <Link to={`/bill/${bill.id}`}>Read more</Link>
+            </li>
+          ))}
+        </ul>
       </div>
-    </div>
+    </>
   );
 };
 
